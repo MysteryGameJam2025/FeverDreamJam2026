@@ -6,6 +6,9 @@ public class GloinkController : MonoBehaviour
     [SerializeField]
     private NavMeshAgent agent;
     private NavMeshAgent Agent => agent;
+    [SerializeField]
+    private GloinkShooting shooting;
+    private GloinkShooting Shooting => shooting;
 
     // TODO: Implement
     private Vector3 PlayerPos => Vector3.zero;
@@ -28,6 +31,12 @@ public class GloinkController : MonoBehaviour
             return;
         }
 
+        UpdateDestination();
+        Shooting.Shoot(transform.position - PlayerPos);
+    }
+
+    void UpdateDestination()
+    {
         Agent.destination = PlayerPos;
     }
 }

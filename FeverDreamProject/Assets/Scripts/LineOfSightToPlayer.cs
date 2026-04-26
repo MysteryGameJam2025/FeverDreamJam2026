@@ -11,13 +11,21 @@ public class LineOfSightToPlayer : MonoBehaviour
     [SerializeField]
     private LayerMask layerMask;
     private LayerMask LayerMask => layerMask;
+    [SerializeField]
+    private float maxDetectionDist;
+    private float MaxDetectionDist => maxDetectionDist;
 
     private bool IsPlayerVisible { get; set; }
 
     void Update()
     {
+        if (Vector3.Distance(transform.position, PlayerPos) > MaxDetectionDist)
+        {
+            return;
+        }
+
         Ray ray = new Ray(transform.position, transform.position - PlayerPos);
-        bool isHit = Physics.Raycast(ray, out RaycastHit hitInfo, Mathf.Infinity, LayerMask);
+        bool isHit = Physics.Raycast(ray, out RaycastHit hitInfo, MaxDetectionDist, LayerMask);
 
         // TODO: Do this properly
         bool isPlayerVisible = isHit && hitInfo.collider.gameObject.name == "Player";

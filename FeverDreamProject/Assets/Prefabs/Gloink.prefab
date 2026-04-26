@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 5367270501933172348}
   - component: {fileID: 5528092060800593966}
   - component: {fileID: 1763320637503614099}
+  - component: {fileID: 757179887842103007}
   m_Layer: 0
   m_Name: Gloink
   m_TagString: Untagged
@@ -149,7 +150,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d6fa3b43e41d8474f8ab95d135e5b9ed, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GloinkController
-  agent: {fileID: 0}
+  agent: {fileID: 5367270501933172348}
+  shooting: {fileID: 757179887842103007}
 --- !u!114 &1763320637503614099
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -180,3 +182,19 @@ MonoBehaviour:
   layerMask:
     serializedVersion: 2
     m_Bits: 1
+  maxDetectionDist: 500
+--- !u!114 &757179887842103007
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3643412701881615831}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3920fbbe3d7e1b646a309863e54c5478, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GloinkShooting
+  fireRate: 2
+  bulletDamage: 10
+  bulletSpeed: 5
