@@ -4,7 +4,7 @@ using UnityEngine.Events;
 public class LineOfSightToPlayer : MonoBehaviour
 {
     // TODO: Implement
-    private Vector3 PlayerPos => Vector3.zero;
+    private Vector3 PlayerPos => FakePlayer.Instance.transform.position;
     [SerializeField]
     private UnityEvent<bool> onPlayerSightChanged;
     private UnityEvent<bool> OnPlayerSightChanged => onPlayerSightChanged;
@@ -24,11 +24,12 @@ public class LineOfSightToPlayer : MonoBehaviour
             return;
         }
 
-        Ray ray = new Ray(transform.position, transform.position - PlayerPos);
+        Ray ray = new Ray(transform.position, PlayerPos - transform.position);
+        Debug.DrawRay(ray.origin, ray.direction);
         bool isHit = Physics.Raycast(ray, out RaycastHit hitInfo, MaxDetectionDist, LayerMask);
 
         // TODO: Do this properly
-        bool isPlayerVisible = isHit && hitInfo.collider.gameObject.name == "Player";
+        bool isPlayerVisible = isHit && hitInfo.collider.gameObject.layer == 7;
         if (isPlayerVisible != IsPlayerVisible)
         {
             IsPlayerVisible = isPlayerVisible;

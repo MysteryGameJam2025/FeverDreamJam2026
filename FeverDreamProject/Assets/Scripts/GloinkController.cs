@@ -9,9 +9,12 @@ public class GloinkController : MonoBehaviour
     [SerializeField]
     private GloinkShooting shooting;
     private GloinkShooting Shooting => shooting;
+    [SerializeField]
+    private float distanceToStayFromPlayer;
+    private float DistanceToStayFromPlayer => distanceToStayFromPlayer;
 
     // TODO: Implement
-    private Vector3 PlayerPos => Vector3.zero;
+    private Vector3 PlayerPos => FakePlayer.Instance.transform.position;
     private bool IsPlayerVisible { get; set; }
 
     public void SetIsPlayerVisible(bool isPlayerVisible)
@@ -32,11 +35,16 @@ public class GloinkController : MonoBehaviour
         }
 
         UpdateDestination();
-        Shooting.Shoot(transform.position - PlayerPos);
+        Shooting.Shoot(PlayerPos - transform.position);
     }
 
     void UpdateDestination()
     {
+        if (Vector3.Distance(PlayerPos, transform.position) <= DistanceToStayFromPlayer)
+        {
+            Agent.destination = transform.position;
+            return;
+        }
         Agent.destination = PlayerPos;
     }
 }

@@ -4,13 +4,13 @@ using UnityEngine;
 public class BulletPool : AbstractMonoBehaviourSingleton<BulletPool>
 {
     [SerializeField]
-    private GameObject bulletPrefab;
-    private GameObject BulletPrefab => bulletPrefab;
+    private BulletController bulletPrefab;
+    private BulletController BulletPrefab => bulletPrefab;
     [SerializeField]
     private int poolSize;
     private int PoolSize => poolSize;
 
-    private Queue<GameObject> Pool { get; set; }
+    private Queue<BulletController> Pool { get; set; }
 
     void Awake()
     {
@@ -19,23 +19,29 @@ public class BulletPool : AbstractMonoBehaviourSingleton<BulletPool>
 
     void PopulatePool()
     {
-        Pool = new Queue<GameObject>();
+        Pool = new Queue<BulletController>();
         for (int i = 0; i < PoolSize; i++)
         {
             var bullet = Instantiate(BulletPrefab, transform);
-            bullet.SetActive(false);
+            bullet.gameObject.SetActive(false);
             Pool.Enqueue(bullet);
         }
     }
 
-    public GameObject GetBullet()
+    public BulletController GetBullet()
     {
         var bullet = Pool.Dequeue();
         if (Pool.Count == 0)
         {
             PopulatePool();
         }
-        bullet.SetActive(true);
+        bullet.gameObject.SetActive(true);
         return bullet;
+    }
+
+    public void ReturnToPool(BulletController bullet)
+    {
+        bullet.gameObject.SetActive(false);
+        Pool.Enqueue(bullet);
     }
 }

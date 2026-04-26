@@ -26,6 +26,7 @@ public class GloinkShooting : MonoBehaviour
 
     void Awake()
     {
+        Bullets = new List<BulletData>();
         IsReadyToFire = true;
     }
 
@@ -60,10 +61,17 @@ public class GloinkShooting : MonoBehaviour
         IsReadyToFire = false;
 
         var bullet = BulletPool.Instance.GetBullet();
-        Bullets.Add(new BulletData()
+        bullet.transform.position = transform.position;
+        var bulletData = new BulletData()
         {
             Transform = bullet.transform,
             Direction = dir
-        });
+        };
+        bullet.Damage = BulletDamage;
+        bullet.OnHit = () =>
+        {
+            Bullets.Remove(bulletData);
+        };
+        Bullets.Add(bulletData);
     }
 }

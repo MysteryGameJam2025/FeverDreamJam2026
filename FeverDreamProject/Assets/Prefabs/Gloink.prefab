@@ -152,6 +152,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GloinkController
   agent: {fileID: 5367270501933172348}
   shooting: {fileID: 757179887842103007}
+  distanceToStayFromPlayer: 5
 --- !u!114 &1763320637503614099
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -181,7 +182,7 @@ MonoBehaviour:
         m_CallState: 2
   layerMask:
     serializedVersion: 2
-    m_Bits: 1
+    m_Bits: 129
   maxDetectionDist: 500
 --- !u!114 &757179887842103007
 MonoBehaviour:

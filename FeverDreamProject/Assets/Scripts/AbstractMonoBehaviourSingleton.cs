@@ -8,7 +8,7 @@ public abstract class AbstractMonoBehaviourSingleton<TSingleton> : MonoBehaviour
     {
         get
         {
-            return instance ??= GameObject.FindObjectOfType<TSingleton>();
+            return instance ??= GameObject.FindAnyObjectByType<TSingleton>();
         }
     }
 
