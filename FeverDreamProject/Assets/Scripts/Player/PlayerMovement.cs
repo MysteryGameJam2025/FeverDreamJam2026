@@ -13,8 +13,24 @@ public class PlayerMovement : MonoBehaviour
     private float SprintModifier => sprintModifier;
 
     [SerializeField]
+    private int fixedFramesForSlide;
+    private int FixedFramesForSlide => fixedFramesForSlide;
+
+    [SerializeField]
+    private float slideMomentum;
+    private float SlideMomentum => slideMomentum;
+
+    [SerializeField]
+    private float momentumFallOff;
+    private float MomentumFallOff => momentumFallOff;
+
+    [SerializeField]
     private float playerGravity;
     private float PlayerGravity => playerGravity;
+
+    [SerializeField]
+    private float crashVelocity;
+    private float CrashVelocity => crashVelocity;
 
     [SerializeField]
     private float jumpHeight;
@@ -54,6 +70,19 @@ public class PlayerMovement : MonoBehaviour
     private InputAction jumpAction;
     private int coyoteFramesRemaining;
 
+    Vector3 targetMove = Vector3.zero;
+
+    private InputAction crouchAction;
+    private Vector3 crouchVector = new Vector3(1, 0.5f, 1);
+    private int framesForSlideRemaining;
+    bool isSliding;
+
+    bool isCrouched;
+    bool isSprinting;
+
+    private float momentum = 1f;
+    private float momentumMinimum = 1f;
+
 
     private void OnEnable()
     {
@@ -71,6 +100,7 @@ public class PlayerMovement : MonoBehaviour
         lookAction = actions["Look"];
         sprintAction = actions["Sprint"];
         jumpAction = actions["Jump"];
+        crouchAction = actions["Crouch"];
 
         moveAction.performed += ctx => moveInput = ctx.ReadValue<Vector2>();
         moveAction.canceled += ctx => moveInput = Vector2.zero;
@@ -102,6 +132,15 @@ public class PlayerMovement : MonoBehaviour
 
     private void Update()
     {
+        if (momentum > momentumMinimum)
+            momentum -= MomentumFallOff * Time.deltaTime;
+        else
+            momentum = 1f;
+
+
+        isCrouched = crouchAction.IsInProgress() && PlayerController.isGrounded;
+        isSprinting = sprintAction.IsInProgress() && !isCrouched && PlayerController.isGrounded;
+
         Look();
         Movement();
     }
@@ -117,27 +156,77 @@ public class PlayerMovement : MonoBehaviour
             if(coyoteFramesRemaining > 0)
                 coyoteFramesRemaining -= 1;
         }
+
+        if (isSprinting)
+        {
+            if (framesForSlideRemaining > 0)
+            {
+                framesForSlideRemaining -= 1;
+            }
+        }
+        else
+            framesForSlideRemaining = FixedFramesForSlide;
     }
 
     private void Movement()
     {
-        Vector3 move = transform.right * moveInput.x + transform.forward * moveInput.y;
+        if ((isSliding && !crouchAction.IsInProgress()) || momentum <= 0.5f)
+        {
+            momentumMinimum = 1f;
+            momentum = 1f;
+            isSliding = false;
+        }
+
+        if (!isSliding)
+            targetMove = transform.right * moveInput.x + transform.forward * moveInput.y;
+        targetMove.Normalize();
+
 
         if (PlayerController.isGrounded && verticalVelocity < 0)
             verticalVelocity = -2f;
 
-        move = move * MoveSpeed;
+        targetMove *= MoveSpeed;
 
-        if (sprintAction.IsPressed())
-            move *= SprintModifier;
+        if (isSprinting)
+            targetMove *= SprintModifier;
 
-        if(jumpAction.WasPressedThisFrame() && coyoteFramesRemaining >= 1)
+        if (jumpAction.WasPressedThisFrame() && coyoteFramesRemaining >= 1)
+        {
             verticalVelocity = Mathf.Sqrt(JumpHeight * -2f * PlayerGravity);
+            isCrouched = false;
+            coyoteFramesRemaining = 0;
+        }
+
+        if (isCrouched)
+        {
+            transform.localScale = crouchVector;
+
+            if (!isSliding)
+            {
+                PlayerController.Move(Vector3.down * 0.25f);
+                if (framesForSlideRemaining == 0)
+                {
+                    isSliding = true;
+                    momentum = SlideMomentum;
+                    momentumMinimum = 0f;
+                }
+                else
+                {
+                    targetMove *= 0.5f;
+                }
+            }
+        }
+        else
+            transform.localScale = Vector3.one;
 
         if (!PlayerController.isGrounded)
+        {
             verticalVelocity += PlayerGravity * Time.deltaTime;
+            if (crouchAction.IsInProgress())
+                verticalVelocity = CrashVelocity;
+        }
 
-        PlayerController.Move((move + (Vector3.up * verticalVelocity)) * Time.deltaTime);
+        PlayerController.Move(((targetMove * momentum) + (Vector3.up * verticalVelocity)) * Time.deltaTime);
     }
 
     private void Look()
