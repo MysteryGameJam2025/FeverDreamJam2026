@@ -33,12 +33,24 @@ public class PlayerMovement : MonoBehaviour
     private float CrashVelocity => crashVelocity;
 
     [SerializeField]
+    private int framesForBigJump;
+    private int FramesForBigJump => framesForBigJump;
+
+    [SerializeField]
     private float jumpHeight;
     private float JumpHeight => jumpHeight;
 
     [SerializeField]
+    private float bigJumpHeight;
+    private float BigJumpHeight => bigJumpHeight;
+
+    [SerializeField]
     private int coyoteFrames;
     private int CoyoteFrames => coyoteFrames;
+
+    [SerializeField]
+    private int framesBeforeCrash;
+    private int FramesBeforeCrash => framesBeforeCrash;
 
     [SerializeField]
     private float cameraSensitivity;
@@ -82,6 +94,9 @@ public class PlayerMovement : MonoBehaviour
 
     private float momentum = 1f;
     private float momentumMinimum = 1f;
+
+    int remainingFramesForBigJump;
+    int framesInTheAir;
 
 
     private void OnEnable()
@@ -138,7 +153,7 @@ public class PlayerMovement : MonoBehaviour
             momentum = 1f;
 
 
-        isCrouched = crouchAction.IsInProgress() && PlayerController.isGrounded;
+        isCrouched = crouchAction.IsInProgress() && coyoteFramesRemaining > 0;
         isSprinting = sprintAction.IsInProgress() && !isCrouched && PlayerController.isGrounded;
 
         Look();
@@ -166,6 +181,18 @@ public class PlayerMovement : MonoBehaviour
         }
         else
             framesForSlideRemaining = FixedFramesForSlide;
+
+        if(remainingFramesForBigJump > 0)
+        {
+            remainingFramesForBigJump -= 1;
+        }
+
+        if (!PlayerController.isGrounded)
+        {
+            framesInTheAir += 1;
+        }
+        else
+            framesInTheAir = 0;
     }
 
     private void Movement()
@@ -173,8 +200,12 @@ public class PlayerMovement : MonoBehaviour
         if ((isSliding && !crouchAction.IsInProgress()) || momentum <= 0.5f)
         {
             momentumMinimum = 1f;
-            momentum = 1f;
             isSliding = false;
+        }
+
+        if(!isSliding && framesInTheAir < 1)
+        {
+            momentum = momentumMinimum;
         }
 
         if (!isSliding)
@@ -192,18 +223,19 @@ public class PlayerMovement : MonoBehaviour
 
         if (jumpAction.WasPressedThisFrame() && coyoteFramesRemaining >= 1)
         {
-            verticalVelocity = Mathf.Sqrt(JumpHeight * -2f * PlayerGravity);
+            verticalVelocity = remainingFramesForBigJump > 0 ? BigJumpHeight : JumpHeight;
             isCrouched = false;
             coyoteFramesRemaining = 0;
+            framesInTheAir = 1;
         }
 
-        if (isCrouched)
+        if (isCrouched && framesInTheAir == 0)
         {
             transform.localScale = crouchVector;
+            verticalVelocity = CrashVelocity;
 
             if (!isSliding)
             {
-                PlayerController.Move(Vector3.down * 0.25f);
                 if (framesForSlideRemaining == 0)
                 {
                     isSliding = true;
@@ -222,8 +254,11 @@ public class PlayerMovement : MonoBehaviour
         if (!PlayerController.isGrounded)
         {
             verticalVelocity += PlayerGravity * Time.deltaTime;
-            if (crouchAction.IsInProgress())
+            if (crouchAction.IsInProgress() && framesInTheAir > FramesBeforeCrash)
+            {
                 verticalVelocity = CrashVelocity;
+                remainingFramesForBigJump = FramesForBigJump;
+            }
         }
 
         PlayerController.Move(((targetMove * momentum) + (Vector3.up * verticalVelocity)) * Time.deltaTime);

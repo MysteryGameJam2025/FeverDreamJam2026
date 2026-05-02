@@ -223,9 +223,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerMovement
   moveSpeed: 5
   sprintModifier: 2
+  fixedFramesForSlide: 10
+  slideMomentum: 2.4
+  momentumFallOff: 2
   playerGravity: -9.81
-  jumpHeight: 1.2
+  crashVelocity: -50
+  framesForBigJump: 8
+  jumpHeight: 5
+  bigJumpHeight: 10
   coyoteFrames: 3
+  framesBeforeCrash: 15
   cameraSensitivity: 0.25
   playerController: {fileID: 8399375935097757425}
   playerInputController: {fileID: 3069198627088100571}
